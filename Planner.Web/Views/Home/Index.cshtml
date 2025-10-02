@@ -1,0 +1,173 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Planner Dashboard";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 mb-4">Welcome to Your Planner</h1>
+            <p class="lead">Manage your events, tasks, and daily routines all in one place.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Upcoming Events -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>Upcoming Events
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.UpcomingEvents.Any())
+                    {
+                        @foreach (var eventItem in Model.UpcomingEvents)
+                        {
+                            <div class="mb-3 border-bottom pb-2">
+                                <h6 class="mb-1">@eventItem.Title</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>@eventItem.StartDate.ToString("MMM dd, yyyy HH:mm")
+                                </small>
+                                @if (!string.IsNullOrEmpty(eventItem.Location))
+                                {
+                                    <br><small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>@eventItem.Location</small>
+                                }
+                                <br><span class="badge bg-@(eventItem.Priority == EventPriority.Critical ? "danger" : eventItem.Priority == EventPriority.High ? "warning" : "secondary")">@eventItem.Priority</span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">No upcoming events.</p>
+                    }
+                </div>
+                <div class="card-footer">
+                    <a href="@Url.Action("Index", "Events")" class="btn btn-primary btn-sm">View All Events</a>
+                    <a href="@Url.Action("Create", "Events")" class="btn btn-outline-primary btn-sm">Add Event</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Tasks -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tasks me-2"></i>Pending Tasks
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.PendingTasks.Any())
+                    {
+                        @foreach (var task in Model.PendingTasks.Take(5))
+                        {
+                            <div class="mb-3 border-bottom pb-2">
+                                <h6 class="mb-1">@task.Title</h6>
+                                @if (task.DueDate.HasValue)
+                                {
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>Due: @task.DueDate.Value.ToString("MMM dd, yyyy")
+                                    </small>
+                                }
+                                <br><span class="badge bg-@(task.Status == Planner.Web.Models.TaskStatus.InProgress ? "info" : "secondary")">@task.Status</span>
+                                <span class="badge bg-@(task.Priority == TaskPriority.Critical ? "danger" : task.Priority == TaskPriority.High ? "warning" : "secondary")">@task.Priority</span>
+                                @if (task.Progress > 0)
+                                {
+                                    <br><div class="progress mt-1" style="height: 5px;">
+                                        <div class="progress-bar" role="progressbar" style="width: @task.Progress%"></div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">No pending tasks.</p>
+                    }
+                </div>
+                <div class="card-footer">
+                    <a href="@Url.Action("Index", "Tasks")" class="btn btn-success btn-sm">View All Tasks</a>
+                    <a href="@Url.Action("Create", "Tasks")" class="btn btn-outline-success btn-sm">Add Task</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Routines -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-repeat me-2"></i>Today's Routines
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.TodayRoutines.Any())
+                    {
+                        @foreach (var routine in Model.TodayRoutines)
+                        {
+                            <div class="mb-3 border-bottom pb-2">
+                                <h6 class="mb-1">@routine.Title</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>@routine.StartTime.ToString("HH:mm")
+                                    @if (routine.EndTime.HasValue)
+                                    {
+                                        @: - @routine.EndTime.Value.ToString("HH:mm")
+                                    }
+                                </small>
+                                @if (!string.IsNullOrEmpty(routine.Category))
+                                {
+                                    <br><span class="badge bg-light text-dark">@routine.Category</span>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">No routines scheduled for today.</p>
+                    }
+                </div>
+                <div class="card-footer">
+                    <a href="@Url.Action("Index", "Routines")" class="btn btn-info btn-sm">View All Routines</a>
+                    <a href="@Url.Action("Create", "Routines")" class="btn btn-outline-info btn-sm">Add Routine</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Create", "Events")" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-plus me-2"></i>New Event
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Create", "Tasks")" class="btn btn-outline-success w-100">
+                                <i class="fas fa-plus me-2"></i>New Task
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Create", "Routines")" class="btn btn-outline-info w-100">
+                                <i class="fas fa-plus me-2"></i>New Routine
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Index", "Events")" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-calendar me-2"></i>View Calendar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
